@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SharedGuard — Accountable Delegation & Session Attribution | Review 1 Prototype</title>
+  <meta name="description" content="Review 1 working prototype for the Shared-Account Elimination Workflow project demonstrating accountable delegation and deterministic session attribution." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- React + Babel (CDN) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ===== CSS Design System ===== */
+    :root {
+      --bg-base:       #0a0d14;
+      --bg-surface:    #111827;
+      --bg-card:       #1a2235;
+      --bg-card-hover: #1f2a42;
+      --bg-input:      #141b2b;
+
+      --accent-blue:   #3b82f6;
+      --accent-cyan:   #06b6d4;
+      --accent-green:  #10b981;
+      --accent-amber:  #f59e0b;
+      --accent-red:    #ef4444;
+      --accent-purple: #8b5cf6;
+
+      --text-primary:   #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted:     #475569;
+
+      --border:        #1e2d45;
+      --border-bright: #2d4263;
+
+      --radius-sm: 6px;
+      --radius:    10px;
+      --radius-lg: 16px;
+
+      --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-glow: 0 0 24px rgba(59,130,246,0.15);
+
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #root { display: flex; min-height: 100vh; }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 250px;
+      min-height: 100vh;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 1px;
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 10px 8px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-secondary);
+      font-size: 13.5px;
+      font-weight: 500;
+      margin-bottom: 2px;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      background: rgba(59,130,246,0.08);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: rgba(59,130,246,0.15);
+      color: var(--accent-blue);
+      box-shadow: inset 3px 0 0 var(--accent-blue);
+    }
+
+    .nav-icon { font-size: 16px; width: 22px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .review-badge {
+      background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.12));
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-size: 11px;
+    }
+
+    .review-badge .rb-title {
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 2px;
+    }
+
+    .review-badge .rb-sub {
+      color: var(--text-muted);
+      font-size: 10px;
+    }
+
+    /* ===== Main Content ===== */
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 64px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .status-dot {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-card);
+      padding: 6px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .page-content {
+      padding: 32px;
+      flex: 1;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 13.5px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .breadcrumb span { color: var(--text-secondary); }
+
+    /* ===== Cards ===== */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      transition: border-color var(--transition), box-shadow var(--transition);
+      margin-bottom: 24px;
+    }
+
+    .card:hover {
+      border-color: var(--border-bright);
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* ===== Stat Cards ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent-color, var(--accent-blue));
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+      border-color: var(--border-bright);
+    }
+
+    .stat-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* ===== Forms ===== */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 13.5px;
+      transition: border-color var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59,130,246,0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent-green), #059669);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+      transform: translateY(-1px);
+    }
+
+    /* ===== Tables ===== */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: rgba(255,255,255,0.03);
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background var(--transition);
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+    tbody td {
+      padding: 13px 16px;
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-cyan);
+    }
+
+    /* ===== Badges ===== */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-critical { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+    .badge-high     { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+    .badge-medium   { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .badge-low      { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+
+    .badge-active   { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+    .badge-closed   { background: rgba(71,85,105,0.3); color: #94a3b8; border: 1px solid rgba(71,85,105,0.4); }
+
+    .badge-attributed   { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+    .badge-unattributed { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+    /* ===== Grid Layouts ===== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+
+    /* ===== Token pill ===== */
+    .token-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-cyan);
+    }
+
+    /* ===== Chart Containers ===== */
+    .chart-container { position: relative; height: 230px; }
+
+    /* ===== Loading & Alert ===== */
+    .loading-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.08);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      font-size: 13.5px;
+    }
+
+    .alert-info  { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); color: #93c5fd; }
+    .alert-warn  { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fcd34d; }
+    .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+    .alert-danger  { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+
+    @media (max-width: 900px) {
+      .sidebar { width: 200px; }
+      .main-content { margin-left: 200px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const API = "http://localhost:8001";
+
+/* API Helper */
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${API}${path}`, options);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+function useApi(path, trigger = 0) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    apiFetch(path)
+      .then(d => { setData(d); setLoading(false); })
+      .catch(e => { setError(e.message); setLoading(false); });
+  }, [path, trigger]);
+
+  return { data, loading, error };
+}
+
+/* Spinner & Badges */
+function Spinner() {
+  return (
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+      <span>Fetching data from backend server…</span>
+    </div>
+  );
+}
+
+function ErrorBox({ message }) {
+  return (
+    <div className="alert alert-danger">
+      ⚠️ Could not connect to FastAPI backend: <strong>{message}</strong>
+    </div>
+  );
+}
+
+function RiskBadge({ level }) {
+  const cls = { CRITICAL: 'badge-critical', HIGH: 'badge-high', MEDIUM: 'badge-medium', LOW: 'badge-low' };
+  return <span className={`badge ${cls[level] || 'badge-low'}`}>{level}</span>;
+}
+
+function StatusBadge({ status }) {
+  const active = status === 'active' || status === 'ACTIVE';
+  return <span className={`badge ${active ? 'badge-active' : 'badge-closed'}`}>
+    {active ? '● Active' : '○ Closed'}
+  </span>;
+}
+
+function AttributionBadge({ status }) {
+  const attr = status === 'ATTRIBUTED';
+  return <span className={`badge ${attr ? 'badge-attributed' : 'badge-unattributed'}`}>
+    {attr ? '✓ ATTRIBUTED' : '✗ UNATTRIBUTED'}
+  </span>;
+}
+
+/* Donut Chart */
+function DonutChart({ attributed, total }) {
+  const ref = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    if (chartRef.current) chartRef.current.destroy();
+    const ctx = ref.current.getContext('2d');
+    chartRef.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Attributed Actions', 'Unattributed Actions'],
+        datasets: [{
+          data: [attributed, Math.max(0, total - attributed)],
+          backgroundColor: ['#10b981', '#1e2d45'],
+          borderColor: ['#10b981', '#1e2d45'],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } } }
+        }
+      }
+    });
+    return () => { if (chartRef.current) chartRef.current.destroy(); };
+  }, [attributed, total]);
+
+  return <div className="chart-container"><canvas ref={ref}></canvas></div>;
+}
+
+/* 1. Dashboard Page */
+function Dashboard() {
+  const { data: stats, loading, error } = useApi('/dashboard/stats');
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Dashboard</div>
+        <h1>🏛️ Executive Dashboard</h1>
+        <p>Review 1 Prototype — Accountable Delegation &amp; Session Attribution Metrics</p>
+      </div>
+
+      <div className="stats-grid">
+        {[
+          { icon: '👥', label: 'Total Users', value: stats.total_users, delta: 'Registered identities', color: '#3b82f6' },
+          { icon: '🔗', label: 'Shared Accounts', value: stats.total_shared_accounts, delta: 'Legacy accounts', color: '#8b5cf6' },
+          { icon: '🟢', label: 'Active Sessions', value: stats.active_sessions, delta: 'Live delegations', color: '#10b981' },
+          { icon: '⚡', label: 'Sensitive Actions', value: stats.total_privileged_actions, delta: 'Total recorded', color: '#f59e0b' },
+          { icon: '🎯', label: 'Attributable Actions', value: stats.prototype_attributed, delta: 'Identified individuals', color: '#06b6d4' },
+          { icon: '📊', label: 'Attribution %', value: stats.prototype_iar + '%', delta: 'Target: >80%', color: '#10b981' },
+        ].map((s, i) => (
+          <div className="stat-card" key={i} style={{ '--accent-color': s.color }}>
+            <div className="stat-icon">{s.icon}</div>
+            <div className="stat-value">{s.value}</div>
+            <div className="stat-label">{s.label}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{s.delta}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-title">Individual Session Attribution Rate</div>
+          <DonutChart attributed={stats.prototype_attributed} total={stats.prototype_total} />
+        </div>
+        <div className="card">
+          <div className="card-title">System Overview Summary</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Baseline Attribution Rate</span>
+              <strong style={{ color: '#ef4444' }}>0.0% (Unattributed)</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Prototype Attribution Rate</span>
+              <strong style={{ color: '#10b981' }}>{stats.prototype_iar}% Attributed</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 10, borderBottom: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Attribution Improvement</span>
+              <strong style={{ color: '#06b6d4' }}>+{stats.prototype_iar}%</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: 'var(--text-secondary)' }}>Session Mechanism</span>
+              <strong style={{ color: 'var(--accent-blue)' }}>Deterministic Delegation Token</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 2. Users Page */
+function Users() {
+  const { data, loading, error } = useApi('/users/');
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Users</div>
+        <h1>👥 Synthetic User Registry</h1>
+        <p>Synthetic identities representing government employees, security admins, auditors, and external partners.</p>
+      </div>
+
+      <div className="card">
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Organisation</th>
+                <th>User Type</th>
+                <th>Role</th>
+                <th>Permission Level</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(u => (
+                <tr key={u.user_id}>
+                  <td><span className="mono">{u.user_id}</span></td>
+                  <td>{u.organisation || u.organisation_id}</td>
+                  <td>{u.user_type}</td>
+                  <td><strong>{u.role}</strong></td>
+                  <td><RiskBadge level={u.permission_level} /></td>
+                  <td><StatusBadge status={u.status || u.active_status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 3. Shared Accounts Page */
+function SharedAccounts() {
+  const { data, loading, error } = useApi('/shared-accounts/');
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Shared Accounts</div>
+        <h1>🔗 Shared Account Registry</h1>
+        <p>Legacy shared accounts tracked across government applications.</p>
+      </div>
+
+      <div className="card">
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Shared Account ID</th>
+                <th>Application</th>
+                <th>Organisation</th>
+                <th>Risk Level</th>
+                <th>Known Users</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(acc => (
+                <tr key={acc.shared_account_id}>
+                  <td><span className="mono">{acc.shared_account_id}</span></td>
+                  <td><strong>{acc.application || acc.application_name}</strong> ({acc.account_name})</td>
+                  <td>{acc.organisation || acc.organisation_id}</td>
+                  <td><RiskBadge level={acc.risk_level} /></td>
+                  <td><span style={{ color: '#f59e0b', fontWeight: 600 }}>{acc.known_users_count}</span></td>
+                  <td><StatusBadge status={acc.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 4. Delegation Page (Interactive Step 1-5 Workflow) */
+function Delegation({ onSessionCreated }) {
+  const { data: users, loading: l1 } = useApi('/users/');
+  const { data: accounts, loading: l2 } = useApi('/shared-accounts/');
+
+  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedAccount, setSelectedAccount] = useState('');
+  const [justification, setJustification] = useState('Standard operational duty');
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (users && users.length > 0 && !selectedUser) setSelectedUser(users[0].user_id);
+    if (accounts && accounts.length > 0 && !selectedAccount) setSelectedAccount(accounts[0].shared_account_id);
+  }, [users, accounts]);
+
+  const handleRequest = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setResult(null);
+    try {
+      const data = await apiFetch('/sessions/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: selectedUser,
+          shared_account_id: selectedAccount,
+          justification: justification
+        })
+      });
+      setResult(data);
+      if (data.permission_granted && onSessionCreated) onSessionCreated();
+    } catch (err) {
+      setResult({ status: 'ERROR', message: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (l1 || l2) return <Spinner />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Delegation Workflow</div>
+        <h1>🔑 Request Accountable Delegation</h1>
+        <p>Demonstrates Steps 1–5: Select identity $\rightarrow$ Request access $\rightarrow$ Check permission $\rightarrow$ Create session $\rightarrow$ Bind user.</p>
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-title">Delegation Access Request</div>
+          <form onSubmit={handleRequest}>
+            <div className="form-group">
+              <label className="form-label">1. Select Synthetic Identity (User)</label>
+              <select
+                className="form-control"
+                value={selectedUser}
+                onChange={e => setSelectedUser(e.target.value)}
+              >
+                {(users || []).map(u => (
+                  <option key={u.user_id} value={u.user_id}>
+                    {u.user_id} — {u.role} ({u.permission_level})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">2. Select Shared Legacy Account</label>
+              <select
+                className="form-control"
+                value={selectedAccount}
+                onChange={e => setSelectedAccount(e.target.value)}
+              >
+                {(accounts || []).map(a => (
+                  <option key={a.shared_account_id} value={a.shared_account_id}>
+                    {a.shared_account_id} — {a.account_name} ({a.application_name}) — Risk: {a.risk_level}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Access Justification</label>
+              <input
+                type="text"
+                className="form-control"
+                value={justification}
+                onChange={e => setJustification(e.target.value)}
+                placeholder="State operational reason..."
+              />
+            </div>
+
+            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Checking Permission & Creating Session...' : '3 & 4. Request Delegation & Create Session'}
+            </button>
+          </form>
+        </div>
+
+        <div>
+          {result && (
+            <div className={`card ${result.permission_granted ? '' : ''}`} style={{
+              borderColor: result.permission_granted ? 'var(--accent-green)' : 'var(--accent-red)'
+            }}>
+              <div className="card-title" style={{ color: result.permission_granted ? '#34d399' : '#f87171' }}>
+                {result.permission_granted ? '✅ Permission Granted & Session Created' : '❌ Permission Denied'}
+              </div>
+
+              {result.permission_granted ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Session ID:</span>
+                    <span className="mono">{result.session.session_id}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Delegation Token:</span>
+                    <span className="token-pill">{result.session.delegation_token}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Bound User:</span>
+                    <strong>{result.session.user_id} ({result.session.user_role})</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Shared Account:</span>
+                    <strong>{result.session.account_name} ({result.session.shared_account_id})</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Permission Check:</span>
+                    <span className="badge badge-low">User Level {result.user_permission} ≥ Account Risk {result.account_risk_level}</span>
+                  </div>
+                  <div className="alert alert-success" style={{ marginTop: 10, marginBottom: 0 }}>
+                    Session active! Actions performed during this session will be deterministically attributed to <strong>{result.session.user_id}</strong>.
+                  </div>
+                </div>
+              ) : (
+                <div className="alert alert-danger" style={{ marginBottom: 0 }}>
+                  ⚠️ {result.message || 'Permission check failed. User level is insufficient for shared account risk level.'}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!result && (
+            <div className="card">
+              <div className="card-title">Workflow Steps Guidance</div>
+              <ol style={{ paddingLeft: 18, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.8 }}>
+                <li>Select synthetic user identity.</li>
+                <li>Select shared account to request access.</li>
+                <li>System checks user clearance against account risk level.</li>
+                <li>System creates session and assigns a delegation token.</li>
+                <li>Session is bound to individual user identity.</li>
+              </ol>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 5. Active Sessions Page */
+function ActiveSessions({ trigger }) {
+  const { data: all, loading, error } = useApi('/sessions/', trigger);
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Active Sessions</div>
+        <h1>🟢 Delegation Sessions</h1>
+        <p>Active and historical delegation sessions linking individual identities to shared accounts.</p>
+      </div>
+
+      <div className="card">
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>User ID</th>
+                <th>Shared Account ID</th>
+                <th>Delegation Token</th>
+                <th>Start Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(all || []).map(s => (
+                <tr key={s.session_id}>
+                  <td><span className="mono">{s.session_id}</span></td>
+                  <td><strong>{s.user_id || 'UNATTRIBUTED'}</strong></td>
+                  <td><span className="mono" style={{ color: '#f59e0b' }}>{s.shared_account_id}</span> ({s.account_name})</td>
+                  <td><span className="token-pill">{s.delegation_token}</span></td>
+                  <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)' }}>{s.start_time?.replace('T', ' ')}</td>
+                  <td><StatusBadge status={s.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 6. Privileged Actions Page (Interactive Step 6-9 Workflow) */
+function PrivilegedActionsPage({ onActionRecorded }) {
+  const { data: activeSessions } = useApi('/sessions/active');
+  const { data: actions, loading, error } = useApi('/actions/privileged');
+
+  const [selectedSession, setSelectedSession] = useState('');
+  const [actionType, setActionType] = useState('View sensitive record');
+  const [sensitivity, setSensitivity] = useState('HIGH');
+  const [justification, setJustification] = useState('Routine operational requirement');
+  const [result, setResult] = useState(null);
+  const [loadingAction, setLoadingAction] = useState(false);
+
+  const handlePerformAction = async (e) => {
+    e.preventDefault();
+    setLoadingAction(true);
+    setResult(null);
+    try {
+      const data = await apiFetch('/actions/perform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: selectedSession || null,
+          action: actionType,
+          sensitivity: sensitivity,
+          justification: justification
+        })
+      });
+      setResult(data);
+      if (onActionRecorded) onActionRecorded();
+    } catch (err) {
+      setResult({ status: 'ERROR', message: err.message });
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Privileged Actions</div>
+        <h1>⚡ Perform Privileged Action</h1>
+        <p>Demonstrates Steps 6–9: Perform sensitive action $\rightarrow$ Record action $\rightarrow$ Attribute to individual $\rightarrow$ Create audit record.</p>
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-title">Execute Privileged Operation</div>
+          <form onSubmit={handlePerformAction}>
+            <div className="form-group">
+              <label className="form-label">Select Active Session (or No Session for Unattributed Baseline)</label>
+              <select
+                className="form-control"
+                value={selectedSession}
+                onChange={e => setSelectedSession(e.target.value)}
+              >
+                <option value="">-- No Session (Unattributed Baseline Action) --</option>
+                {(activeSessions || []).map(s => (
+                  <option key={s.session_id} value={s.session_id}>
+                    {s.session_id} — User: {s.user_id} $\rightarrow$ Account: {s.shared_account_id} ({s.delegation_token})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Sensitive Action Type</label>
+              <select
+                className="form-control"
+                value={actionType}
+                onChange={e => setActionType(e.target.value)}
+              >
+                <option value="View sensitive record">View sensitive record</option>
+                <option value="Modify configuration">Modify configuration</option>
+                <option value="Approve transaction">Approve transaction</option>
+                <option value="Export report">Export report</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Action Sensitivity</label>
+              <select
+                className="form-control"
+                value={sensitivity}
+                onChange={e => setSensitivity(e.target.value)}
+              >
+                <option value="CRITICAL">CRITICAL</option>
+                <option value="HIGH">HIGH</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="LOW">LOW</option>
+              </select>
+            </div>
+
+            <button type="submit" className="btn btn-success" style={{ width: '100%' }} disabled={loadingAction}>
+              {loadingAction ? 'Recording & Attributing Action...' : '6 & 7 & 8. Execute & Record Sensitive Action'}
+            </button>
+          </form>
+        </div>
+
+        <div>
+          {result && (
+            <div className="card" style={{ borderColor: result.attribution_status === 'ATTRIBUTED' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+              <div className="card-title" style={{ color: result.attribution_status === 'ATTRIBUTED' ? '#34d399' : '#f87171' }}>
+                9. Audit Record Generated ({result.attribution_status})
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Action ID:</span>
+                  <span className="mono">{result.action_id}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Action:</span>
+                  <strong>{result.action}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Attributed User:</span>
+                  <strong style={{ color: result.attribution_status === 'ATTRIBUTED' ? '#34d399' : '#f87171' }}>
+                    {result.user_id}
+                  </strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Shared Account:</span>
+                  <span className="mono">{result.shared_account_id}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Attribution Status:</span>
+                  <AttributionBadge status={result.attribution_status} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">Recorded Privileged Actions</div>
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Action ID</th>
+                <th>Session ID</th>
+                <th>User ID</th>
+                <th>Shared Account ID</th>
+                <th>Action</th>
+                <th>Timestamp</th>
+                <th>Attribution Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(actions || []).map(a => (
+                <tr key={a.action_id}>
+                  <td><span className="mono">{a.action_id}</span></td>
+                  <td><span className="mono">{a.session_id}</span></td>
+                  <td><strong>{a.attributed_user_id || a.user_id}</strong></td>
+                  <td><span className="mono" style={{ color: '#f59e0b' }}>{a.shared_account_id}</span></td>
+                  <td><strong>{a.action}</strong></td>
+                  <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)' }}>{a.timestamp?.replace('T', ' ')}</td>
+                  <td><AttributionBadge status={a.attribution_status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 7. Audit Log Page */
+function AuditLog({ trigger }) {
+  const { data, loading, error } = useApi('/audit-log', trigger);
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div className="breadcrumb">SharedGuard <span>›</span> Audit Log</div>
+        <h1>📋 System Audit Log</h1>
+        <p>Complete immutable audit trail of privileged operations and session attribution results.</p>
+      </div>
+
+      <div className="card">
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User ID</th>
+                <th>Session ID</th>
+                <th>Shared Account</th>
+                <th>Action</th>
+                <th>Attribution Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(data || []).map((log, idx) => (
+                <tr key={idx}>
+                  <td style={{ fontSize: 12, fontFamily: 'var(--font-mono)' }}>{log.timestamp?.replace('T', ' ')}</td>
+                  <td><strong>{log.user_id}</strong></td>
+                  <td><span className="mono">{log.session_id}</span></td>
+                  <td><span style={{ color: '#f59e0b', fontWeight: 500 }}>{log.shared_account}</span> ({log.shared_account_id})</td>
+                  <td>{log.action}</td>
+                  <td><AttributionBadge status={log.attribution_status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Navigation tabs config */
+const PAGES = [
+  { id: 'dashboard',        label: 'Dashboard',          icon: '📊' },
+  { id: 'users',            label: 'Users',              icon: '👥' },
+  { id: 'shared-accounts',  label: 'Shared Accounts',    icon: '🔗' },
+  { id: 'delegation',       label: 'Delegation',         icon: '🔑' },
+  { id: 'sessions',         label: 'Active Sessions',    icon: '🟢' },
+  { id: 'actions',          label: 'Privileged Actions', icon: '⚡' },
+  { id: 'audit-log',        label: 'Audit Log',          icon: '📋' },
+];
+
+/* Main App */
+function App() {
+  const [activePage, setActivePage] = useState('dashboard');
+  const [backendOnline, setBackendOnline] = useState(null);
+  const [trigger, setTrigger] = useState(0);
+
+  const refreshData = () => setTrigger(t => t + 1);
+
+  useEffect(() => {
+    fetch(`${API}/health`)
+      .then(r => r.ok ? setBackendOnline(true) : setBackendOnline(false))
+      .catch(() => setBackendOnline(false));
+  }, [trigger]);
+
+  return (
+    <>
+      <nav className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-badge">
+            <div className="logo-icon">🛡️</div>
+            <div>
+              <div className="logo-text">SharedGuard</div>
+              <div className="logo-sub">Review 1 Prototype</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="sidebar-nav">
+          <div className="nav-section-label">Main Prototype Pages</div>
+          {PAGES.map(p => (
+            <button
+              key={p.id}
+              className={`nav-item ${activePage === p.id ? 'active' : ''}`}
+              onClick={() => setActivePage(p.id)}
+            >
+              <span className="nav-icon">{p.icon}</span>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="review-badge">
+            <div className="rb-title">Phase 4 Prototype</div>
+            <div className="rb-sub">Review 1 — 35% Milestone</div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="main-content">
+        <header className="topbar">
+          <div className="topbar-title">{PAGES.find(p => p.id === activePage)?.label}</div>
+          <div className="topbar-right">
+            <div className="status-dot">
+              <div className="dot" style={{
+                background: backendOnline === null ? '#f59e0b' : backendOnline ? '#10b981' : '#ef4444'
+              }}></div>
+              {backendOnline === null ? 'Connecting...' : backendOnline ? 'Backend Online (Port 8001)' : 'Backend Offline'}
+            </div>
+          </div>
+        </header>
+
+        <main className="page-content">
+          {activePage === 'dashboard'       && <Dashboard />}
+          {activePage === 'users'           && <Users />}
+          {activePage === 'shared-accounts' && <SharedAccounts />}
+          {activePage === 'delegation'      && <Delegation onSessionCreated={refreshData} />}
+          {activePage === 'sessions'        && <ActiveSessions trigger={trigger} />}
+          {activePage === 'actions'         && <PrivilegedActionsPage onActionRecorded={refreshData} />}
+          {activePage === 'audit-log'       && <AuditLog trigger={trigger} />}
+        </main>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

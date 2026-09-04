@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Phase 3 — Baseline Evaluation | SharedGuard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0d14; --surface:#111827; --card:#1a2235; --border:#1e2d45;
+    --blue:#3b82f6; --cyan:#06b6d4; --green:#10b981;
+    --amber:#f59e0b; --red:#ef4444; --purple:#8b5cf6;
+    --text:#f1f5f9; --muted:#94a3b8; --dim:#475569;
+    --mono:'JetBrains Mono',monospace; --sans:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);
+        font-size:14px;line-height:1.6;padding:32px;min-height:100vh}
+  h1{font-size:26px;font-weight:800;margin-bottom:4px;
+      background:linear-gradient(90deg,var(--blue),var(--cyan));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  h2{font-size:15px;font-weight:700;color:var(--muted);margin:28px 0 14px;
+      text-transform:uppercase;letter-spacing:.07em}
+  .subtitle{color:var(--muted);font-size:13px;margin-bottom:32px}
+  .grid{display:grid;gap:18px;margin-bottom:24px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--card);border:1px solid var(--border);
+         border-radius:14px;padding:22px}
+  .stat-val{font-size:42px;font-weight:800;line-height:1;margin-bottom:4px}
+  .stat-lbl{font-size:12px;color:var(--muted);font-weight:500}
+  .red{color:#f87171}.green{color:#34d399}.amber{color:#fbbf24}
+  .blue{color:#60a5fa}.cyan{color:#67e8f9}
+  .chart-wrap{position:relative;height:260px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{background:rgba(255,255,255,.03);padding:10px 12px;text-align:left;
+            font-size:11px;font-weight:600;text-transform:uppercase;
+            letter-spacing:.06em;color:var(--dim);border-bottom:1px solid var(--border)}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.04)}
+  tbody tr:hover{background:rgba(255,255,255,.025)}
+  tbody td{padding:10px 12px;color:var(--muted)}
+  tbody td:first-child{color:var(--text);font-weight:500}
+  .badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+  .b-red{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+  .b-green{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+  .b-amber{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+  .b-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+  .formula{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;
+            padding:16px 20px;font-family:var(--mono);font-size:13px;
+            color:var(--muted);margin-bottom:24px;line-height:2}
+  .formula strong{color:var(--text);font-size:15px}
+  .improv-box{text-align:center;padding:36px;}
+  .improv-val{font-size:80px;font-weight:800;line-height:1;
+               background:linear-gradient(90deg,var(--green),var(--cyan));
+               -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .progress{height:8px;background:rgba(255,255,255,.06);border-radius:99px;
+             overflow:hidden;margin-top:10px}
+  .progress-fill{height:100%;border-radius:99px}
+  footer{margin-top:40px;text-align:center;color:var(--dim);font-size:12px}
+</style>
+</head>
+<body>
+
+<h1>Phase 3 — Baseline Evaluation</h1>
+<p class="subtitle">
+  Project: Shared-Account Elimination Workflow &nbsp;|&nbsp;
+  Generated: 2026-09-04 10:46:32 &nbsp;|&nbsp; Review 1
+</p>
+
+<!-- Metric formula -->
+<div class="formula">
+  <strong>Individual Attribution Rate (IAR)</strong><br/>
+  IAR = Individually Attributable Sensitive Actions &divide; Total Sensitive Actions &times; 100
+</div>
+
+<!-- IAR Comparison Cards -->
+<h2>IAR Comparison — Baseline vs Prototype</h2>
+<div class="grid g2">
+  <div class="card">
+    <div class="stat-lbl">&#10060; Baseline — Legacy Shared-Account Environment</div>
+    <div class="stat-val red" style="margin-top:12px">0.00%</div>
+    <div class="stat-lbl" style="margin-top:6px">
+      0 of 82 sensitive actions individually attributed
+    </div>
+    <div class="progress" style="margin-top:14px">
+      <div class="progress-fill" style="width:0.0%;background:var(--red)"></div>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--dim)">
+      The system can only record the <strong style="color:var(--amber)">shared account</strong>.
+      Individual identity is unknown.
+    </div>
+  </div>
+  <div class="card">
+    <div class="stat-lbl">&#9989; Prototype — Accountable Delegation Workflow</div>
+    <div class="stat-val green" style="margin-top:12px">84.48%</div>
+    <div class="stat-lbl" style="margin-top:6px">
+      49 of 58 sensitive actions individually attributed
+    </div>
+    <div class="progress" style="margin-top:14px">
+      <div class="progress-fill" style="width:84.48%;background:linear-gradient(90deg,var(--green),var(--cyan))"></div>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--dim)">
+      Every action is linked to an individual via a
+      <strong style="color:var(--cyan)">delegation token</strong>.
+    </div>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<h2>Baseline — Sensitive Action Breakdown</h2>
+<div class="grid g4">
+  <div class="card">
+    <div class="stat-val blue">82</div>
+    <div class="stat-lbl">Total Sensitive Actions<br/>(HIGH + CRITICAL)</div>
+  </div>
+  <div class="card">
+    <div class="stat-val red">0</div>
+    <div class="stat-lbl">Individually Attributable<br/>(IAR = 0%)</div>
+  </div>
+  <div class="card">
+    <div class="stat-val amber">78</div>
+    <div class="stat-lbl">Shared-Account Attributed<br/>(identity unknown)</div>
+  </div>
+  <div class="card">
+    <div class="stat-val" style="color:var(--purple)">4</div>
+    <div class="stat-lbl">Unattributed<br/>(anonymous / weak evidence)</div>
+  </div>
+</div>
+
+<!-- Charts -->
+<h2>Visual Comparison</h2>
+<div class="grid g2">
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">
+      Baseline — Attribution Distribution
+    </div>
+    <div class="chart-wrap">
+      <canvas id="baselineDonut"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">
+      IAR Comparison (Baseline vs Prototype)
+    </div>
+    <div class="chart-wrap">
+      <canvas id="iarBar"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="grid g2">
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">
+      Baseline — Sensitivity Breakdown
+    </div>
+    <div class="chart-wrap">
+      <canvas id="sensitivityBar"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;font-weight:600;color:var(--dim);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em">
+      Prototype — Attribution Confidence
+    </div>
+    <div class="chart-wrap">
+      <canvas id="confidenceBar"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Improvement banner -->
+<h2>Improvement</h2>
+<div class="card improv-box">
+  <div style="font-size:14px;color:var(--muted);margin-bottom:8px">
+    IAR Improvement (Baseline &#8594; Prototype)
+  </div>
+  <div class="improv-val">+84.48%</div>
+  <div style="margin-top:14px;font-size:14px;color:var(--muted)">
+    From <strong style="color:var(--red)">0.0%</strong> to
+    <strong style="color:var(--green)">84.48%</strong>
+  </div>
+</div>
+
+<!-- Per-account baseline table -->
+<h2>Baseline — Per Shared Account Breakdown</h2>
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Shared Account</th>
+        <th>Total Sensitive</th>
+        <th>Individually Attr.</th>
+        <th>Shared-Acct Attr.</th>
+        <th>Unattributed</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+        <tr>
+          <td>SACC001 (LegacyERP)</td>
+          <td>5</td>
+          <td class="red">0</td>
+          <td>4</td>
+          <td class="amber">1</td>
+        </tr>
+        <tr>
+          <td>SACC002 (LegacyERP)</td>
+          <td>16</td>
+          <td class="red">0</td>
+          <td>16</td>
+          <td class="amber">0</td>
+        </tr>
+        <tr>
+          <td>SACC003 (GovPortal)</td>
+          <td>9</td>
+          <td class="red">0</td>
+          <td>8</td>
+          <td class="amber">1</td>
+        </tr>
+        <tr>
+          <td>SACC004 (NetworkMonitor)</td>
+          <td>10</td>
+          <td class="red">0</td>
+          <td>10</td>
+          <td class="amber">0</td>
+        </tr>
+        <tr>
+          <td>SACC005 (CoreDatabase)</td>
+          <td>26</td>
+          <td class="red">0</td>
+          <td>24</td>
+          <td class="amber">2</td>
+        </tr>
+        <tr>
+          <td>SACC006 (HRManagement)</td>
+          <td>11</td>
+          <td class="red">0</td>
+          <td>11</td>
+          <td class="amber">0</td>
+        </tr>
+        <tr>
+          <td>SACC007 (ProcurementHub)</td>
+          <td>5</td>
+          <td class="red">0</td>
+          <td>5</td>
+          <td class="amber">0</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Prototype scenario table -->
+<h2>Prototype — Scenario Breakdown</h2>
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Scenario Tag</th><th>Sensitive Actions</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>attributed</td><td>10</td></tr><tr><td>external_partner</td><td>8</td></tr><tr><td>failed_permission</td><td>5</td></tr><tr><td>high_privilege</td><td>15</td></tr><tr><td>missing_evidence</td><td>4</td></tr><tr><td>normal</td><td>16</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Baseline problem statement -->
+<h2>Why the Baseline Fails</h2>
+<div class="card" style="padding:24px 28px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
+    <div>
+      <div style="font-size:20px;margin-bottom:8px">&#128272;</div>
+      <div style="font-weight:700;margin-bottom:6px">Shared Credentials</div>
+      <div style="color:var(--muted);font-size:13px">
+        Multiple employees share one login. When a sensitive action is logged,
+        only the shared account name is recorded.
+      </div>
+    </div>
+    <div>
+      <div style="font-size:20px;margin-bottom:8px">&#9888;&#65039;</div>
+      <div style="font-weight:700;margin-bottom:6px">Zero Individual Accountability</div>
+      <div style="color:var(--muted);font-size:13px">
+        IAR = 0%. It is impossible to determine <em>which</em> person
+        approved a payment or deleted a record.
+      </div>
+    </div>
+    <div>
+      <div style="font-size:20px;margin-bottom:8px">&#128202;</div>
+      <div style="font-weight:700;margin-bottom:6px">Audit Gap</div>
+      <div style="color:var(--muted);font-size:13px">
+        78 HIGH/CRITICAL actions are
+        attributed only to a shared account. Investigators cannot identify the responsible individual.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  SharedGuard &mdash; Review 1 Prototype &nbsp;&bull;&nbsp;
+  Shared-Account Elimination Workflow &nbsp;&bull;&nbsp;
+  Phase 3 Baseline Evaluation
+</footer>
+
+<script>
+const OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 }, boxWidth: 12, padding: 14 } },
+    tooltip: { backgroundColor: '#1a2235', titleColor: '#f1f5f9', bodyColor: '#94a3b8', borderColor: '#1e2d45', borderWidth: 1 }
+  }
+};
+
+// Baseline donut
+new Chart(document.getElementById('baselineDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Individually Attributed (0.0%)', 'Shared-Account Only (95.1%)', 'Unattributed (4.9%)'],
+    datasets: [{
+      data: [0, 78, 4],
+      backgroundColor: ['#10b98133','#f59e0b33','#ef444433'],
+      borderColor:     ['#10b981',  '#f59e0b',  '#ef4444'],
+      borderWidth: 2, hoverOffset: 4
+    }]
+  },
+  options: { ...OPTS, cutout: '68%' }
+});
+
+// IAR comparison bar
+new Chart(document.getElementById('iarBar'), {
+  type: 'bar',
+  data: {
+    labels: ['Baseline\n(Legacy)', 'Prototype\n(Delegation)'],
+    datasets: [{
+      label: 'IAR %',
+      data: [0.0, 84.48],
+      backgroundColor: ['#ef444433','#10b98133'],
+      borderColor:     ['#ef4444',  '#10b981'],
+      borderWidth: 2, borderRadius: 8
+    }]
+  },
+  options: {
+    ...OPTS,
+    plugins: { ...OPTS.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8' } },
+      y: { min:0, max:100, grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } }
+    }
+  }
+});
+
+// Sensitivity bar
+new Chart(document.getElementById('sensitivityBar'), {
+  type: 'bar',
+  data: {
+    labels: ['HIGH', 'CRITICAL'],
+    datasets: [{
+      label: 'Baseline Sensitive Actions',
+      data: [51, 31],
+      backgroundColor: ['#f59e0b33','#ef444433'],
+      borderColor:     ['#f59e0b',  '#ef4444'],
+      borderWidth: 2, borderRadius: 6
+    }]
+  },
+  options: {
+    ...OPTS,
+    plugins: { ...OPTS.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+
+// Confidence bar (prototype)
+const conf = {"HIGH": 48, "MEDIUM": 1, "LOW": 0, "N/A": 0};
+new Chart(document.getElementById('confidenceBar'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(conf),
+    datasets: [{
+      label: 'Attribution Confidence',
+      data: Object.values(conf),
+      backgroundColor: ['#10b98133','#3b82f633','#f59e0b33','#47556933'],
+      borderColor:     ['#10b981',  '#3b82f6',  '#f59e0b',  '#475569'],
+      borderWidth: 2, borderRadius: 6
+    }]
+  },
+  options: {
+    ...OPTS,
+    plugins: { ...OPTS.plugins, legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8' } },
+      y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#94a3b8' } }
+    }
+  }
+});
+</script>
+</body>
+</html>

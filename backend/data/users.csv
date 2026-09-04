@@ -1,0 +1,21 @@
+user_id,organisation_id,user_type,role,permission_level,clearance_level,account_type,mfa_enrolled,active_status,created_date
+USER001,ORG001,government_employee,Policy Analyst,L1,L1,internal,YES,ACTIVE,2022-04-05
+USER002,ORG001,government_employee,Revenue Inspector,L1,L1,internal,YES,ACTIVE,2025-08-20
+USER003,ORG001,government_employee,Policy Analyst,L1,L1,internal,YES,ACTIVE,2023-02-08
+USER004,ORG001,government_employee,Procurement Officer,L1,L1,internal,YES,ACTIVE,2025-11-22
+USER005,ORG002,government_employee,Treasury Analyst,L1,L1,internal,YES,ACTIVE,2023-04-09
+USER006,ORG002,government_employee,Treasury Analyst,L2,L2,internal,YES,ACTIVE,2023-11-25
+USER007,ORG002,government_employee,Data Entry Operator,L2,L2,internal,YES,ACTIVE,2022-02-28
+USER008,ORG003,government_employee,Treasury Analyst,L2,L2,internal,NO,ACTIVE,2024-11-09
+USER009,ORG003,government_employee,Treasury Analyst,L1,L1,internal,NO,ACTIVE,2025-11-04
+USER010,ORG003,government_employee,Finance Officer,L2,L2,internal,YES,ACTIVE,2024-05-27
+USER011,ORG001,security_administrator,IAM Engineer,L4,L4,internal,YES,ACTIVE,2021-11-22
+USER012,ORG001,security_administrator,Security Admin,L4,L4,internal,YES,ACTIVE,2023-05-30
+USER013,ORG002,security_administrator,Security Admin,L4,L4,internal,YES,ACTIVE,2025-12-22
+USER014,ORG002,security_administrator,SOC Analyst,L4,L4,internal,YES,ACTIVE,2021-10-07
+USER015,ORG004,auditor,Compliance Reviewer,L3,L3,external,YES,ACTIVE,2023-03-07
+USER016,ORG004,auditor,Internal Auditor,L2,L2,external,YES,ACTIVE,2022-09-16
+USER017,ORG001,auditor,Internal Auditor,L3,L3,internal,YES,ACTIVE,2025-12-20
+USER018,ORG005,external_partner,System Integration Specialist,L1,L1,external,NO,ACTIVE,2024-11-09
+USER019,ORG005,external_partner,Consultant,L1,L1,external,YES,INACTIVE,2024-05-04
+USER020,ORG006,external_partner,Maintenance Technician,L1,L1,external,NO,INACTIVE,2022-06-25

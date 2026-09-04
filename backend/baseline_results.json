@@ -1,0 +1,99 @@
+{
+  "project": "Shared-Account Elimination Workflow \u2014 Review 1",
+  "phase": "Phase 3 \u2014 Baseline Evaluation",
+  "baseline": {
+    "mode": "BASELINE (Legacy Shared-Account Environment)",
+    "evaluated_at": "2026-09-04 10:46:32",
+    "total_log_records": 140,
+    "total_sensitive_actions": 82,
+    "individually_attributable": 0,
+    "shared_account_attributed": 78,
+    "unattributed": 4,
+    "permission_denied": 6,
+    "individual_attribution_rate": 0.0,
+    "sensitivity_breakdown": {
+      "high": 51,
+      "critical": 31
+    },
+    "account_breakdown": {
+      "SACC002 (LegacyERP)": {
+        "total": 16,
+        "individually_attr": 0,
+        "shared_attr": 16,
+        "unattr": 0
+      },
+      "SACC006 (HRManagement)": {
+        "total": 11,
+        "individually_attr": 0,
+        "shared_attr": 11,
+        "unattr": 0
+      },
+      "SACC004 (NetworkMonitor)": {
+        "total": 10,
+        "individually_attr": 0,
+        "shared_attr": 10,
+        "unattr": 0
+      },
+      "SACC005 (CoreDatabase)": {
+        "total": 26,
+        "individually_attr": 0,
+        "shared_attr": 24,
+        "unattr": 2
+      },
+      "SACC001 (LegacyERP)": {
+        "total": 5,
+        "individually_attr": 0,
+        "shared_attr": 4,
+        "unattr": 1
+      },
+      "SACC003 (GovPortal)": {
+        "total": 9,
+        "individually_attr": 0,
+        "shared_attr": 8,
+        "unattr": 1
+      },
+      "SACC007 (ProcurementHub)": {
+        "total": 5,
+        "individually_attr": 0,
+        "shared_attr": 5,
+        "unattr": 0
+      }
+    },
+    "finding": "In the baseline environment, ZERO sensitive actions can be attributed to an individual. The system identifies only the shared account. This means individual accountability is impossible."
+  },
+  "prototype": {
+    "mode": "PROTOTYPE (Accountable Delegation Workflow)",
+    "evaluated_at": "2026-09-04 10:46:32",
+    "total_action_records": 60,
+    "total_sensitive_actions": 58,
+    "individually_attributable": 49,
+    "shared_account_attributed": 0,
+    "unattributed": 4,
+    "permission_denied": 5,
+    "individual_attribution_rate": 84.48,
+    "sensitivity_breakdown": {
+      "high": 30,
+      "critical": 28
+    },
+    "confidence_breakdown": {
+      "HIGH": 48,
+      "MEDIUM": 1,
+      "LOW": 0,
+      "N/A": 0
+    },
+    "scenario_breakdown": {
+      "normal": 16,
+      "attributed": 10,
+      "missing_evidence": 4,
+      "external_partner": 8,
+      "high_privilege": 15,
+      "failed_permission": 5
+    }
+  },
+  "comparison": {
+    "baseline_iar": 0.0,
+    "prototype_iar": 84.48,
+    "improvement": 84.48,
+    "verdict": "The baseline shows 0% individual attribution. The Review-1 prototype achieves 84.48% IAR, an improvement of +84.48 percentage points."
+  }
+}

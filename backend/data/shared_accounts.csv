@@ -1,0 +1,9 @@
+shared_account_id,account_name,application_id,application_name,organisation_id,account_type,risk_level,known_users_count,requires_delegation,status,created_date
+SACC001,admin_shared,APP001,LegacyERP,ORG001,shared_admin,HIGH,6,YES,ACTIVE,2024-09-12
+SACC002,operator_shared,APP001,LegacyERP,ORG001,shared_operator,MEDIUM,8,NO,ACTIVE,2018-09-01
+SACC003,legacy_admin,APP002,GovPortal,ORG001,legacy_admin,HIGH,4,YES,ACTIVE,2018-05-19
+SACC004,sysop_shared,APP003,NetworkMonitor,ORG002,shared_operator,HIGH,3,YES,ACTIVE,2023-08-01
+SACC005,db_admin_shared,APP004,CoreDatabase,ORG001,shared_admin,CRITICAL,2,YES,ACTIVE,2019-07-06
+SACC006,hr_shared,APP005,HRManagement,ORG002,shared_operator,HIGH,5,YES,ACTIVE,2022-10-03
+SACC007,procurement_shared,APP006,ProcurementHub,ORG003,shared_operator,MEDIUM,7,NO,ACTIVE,2023-09-01
+SACC008,audit_viewer,APP007,AuditTrailSystem,ORG004,read_only,LOW,4,NO,ACTIVE,2020-04-25
