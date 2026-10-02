@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-10-02T15:50:47Z",
+  "project": "Shared-Account Elimination Workflow Using Accountable Delegation and Session Attribution",
+  "review_milestone": "Review 2 (70% Completion)",
+  "metrics_summary": {
+    "baseline_iar": 0.0,
+    "prototype_iar": 83.87,
+    "effective_iar_with_fallback": 85.48,
+    "sensitive_iar": 83.33,
+    "improvement": 83.87,
+    "unattributed_rate": 6.45,
+    "blocked_or_denied_rate": 8.06
+  },
+  "baseline": {
+    "total_system_logs": 140,
+    "sensitive_actions": 82,
+    "individually_attributed": 0,
+    "unattributed": 140,
+    "iar": 0.0,
+    "non_repudiation": "FAIL \u2014 Individual operator unknown",
+    "enforcement": "NONE \u2014 Direct shared credential login"
+  },
+  "prototype": {
+    "total_actions": 62,
+    "sensitive_actions": 60,
+    "individually_attributed": 52,
+    "unattributed": 4,
+    "permission_denied": 5,
+    "blocked_actions": 0,
+    "uncertain_actions": 1,
+    "iar": 83.87,
+    "sensitive_iar": 83.33,
+    "non_repudiation": "PASS \u2014 Deterministically bound to individual session",
+    "enforcement": "ACTIVE \u2014 Granular L1-L4 & multi-org policies"
+  },
+  "human_review_queue": {
+    "total_cases": 2,
+    "pending_review": 1,
+    "confirmed_attributed": 1,
+    "ruled_unattributed": 0
+  },
+  "organisation_breakdown": {
+    "ORG001": {
+      "total_actions": 20,
+      "attributed": 18,
+      "iar": 90.0
+    },
+    "ORG002": {
+      "total_actions": 13,
+      "attributed": 10,
+      "iar": 76.92
+    },
+    "ORG003": {
+      "total_actions": 8,
+      "attributed": 6,
+      "iar": 75.0
+    },
+    "ORG004": {
+      "total_actions": 16,
+      "attributed": 13,
+      "iar": 81.25
+    },
+    "ORG005": {
+      "total_actions": 5,
+      "attributed": 5,
+      "iar": 100.0
+    }
+  }
+}

@@ -1,8 +1,9 @@
 """
-routers/users.py — Synthetic user endpoints for Phase 4 prototype.
+routers/users.py — Synthetic user management endpoints with multi-organisation filtering.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
@@ -28,8 +29,26 @@ def _serialize(u: User):
 
 
 @router.get("/")
-def list_users(db: Session = Depends(get_db)):
-    return [_serialize(u) for u in db.query(User).all()]
+@router.get("")
+def list_users(
+    organisation: Optional[str] = Query(None),
+    permission: Optional[str] = Query(None),
+    user_type: Optional[str] = Query(None),
+    active_only: bool = False,
+    db: Session = Depends(get_db)
+):
+    query = db.query(User)
+
+    if organisation:
+        query = query.filter(User.organisation_id == organisation.upper())
+    if permission:
+        query = query.filter(User.permission_level == permission.upper())
+    if user_type:
+        query = query.filter(User.user_type == user_type.lower())
+    if active_only:
+        query = query.filter(User.active_status == "ACTIVE")
+
+    return [_serialize(u) for u in query.all()]
 
 
 @router.get("/active")
@@ -41,5 +60,5 @@ def list_active_users(db: Session = Depends(get_db)):
 def get_user(user_id: str, db: Session = Depends(get_db)):
     u = db.query(User).filter(User.user_id == user_id).first()
     if not u:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail=f"User '{user_id}' not found")
     return _serialize(u)

@@ -1,18 +1,37 @@
 """
-routers/shared_accounts.py — Shared account endpoints for Phase 4 prototype.
+routers/shared_accounts.py — Shared account inventory endpoints with rich filters for Review 2.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models import SharedAccount, PrivilegedAction, SystemLog
+from models import SharedAccount, PrivilegedAction, SystemLog, DelegationSession
 
 router = APIRouter(prefix="/shared-accounts", tags=["Shared Accounts"])
 
 
 @router.get("/")
-def list_shared_accounts(db: Session = Depends(get_db)):
-    accounts = db.query(SharedAccount).all()
+@router.get("")
+def list_shared_accounts(
+    organisation: Optional[str] = Query(None),
+    risk: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    application: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    query = db.query(SharedAccount)
+
+    if organisation:
+        query = query.filter(SharedAccount.organisation_id == organisation.upper())
+    if risk:
+        query = query.filter(SharedAccount.risk_level == risk.upper())
+    if status_filter:
+        query = query.filter(SharedAccount.status == status_filter.upper())
+    if application:
+        query = query.filter(SharedAccount.application_name.ilike(f"%{application}%"))
+
+    accounts = query.all()
     result = []
     for acc in accounts:
         baseline_count  = db.query(SystemLog).filter(
@@ -25,6 +44,11 @@ def list_shared_accounts(db: Session = Depends(get_db)):
             PrivilegedAction.shared_account_id == acc.shared_account_id,
             PrivilegedAction.attribution_status == "ATTRIBUTED",
         ).count()
+        active_sessions = db.query(DelegationSession).filter(
+            DelegationSession.shared_account_id == acc.shared_account_id,
+            DelegationSession.status == "active"
+        ).count()
+
         result.append({
             "shared_account_id":      acc.shared_account_id,
             "account_name":           acc.account_name,
@@ -42,6 +66,8 @@ def list_shared_accounts(db: Session = Depends(get_db)):
             "baseline_log_count":     baseline_count,
             "prototype_action_count": prototype_count,
             "attributed_count":       attributed_count,
+            "active_sessions_count":  active_sessions,
+            "target_for_elimination": acc.requires_delegation == "YES" or acc.risk_level in ["HIGH", "CRITICAL"]
         })
     return result
 
